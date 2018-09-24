@@ -1,0 +1,15 @@
+paths:
+    migrations: '%%PHINX_CONFIG_DIR%%/db/migrations'
+    seeds: '%PHINX_CONFIG_DIR%/db/seeds'
+
+environments:
+    default_migration_table: phinxlog
+
+    develop:
+        adapter: mysql
+        host: frame_mariadb
+        name: frame
+        user: root
+        pass: root
+        port: 3306
+        charset: utf8

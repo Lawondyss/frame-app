@@ -1,0 +1,72 @@
+version: '2'
+
+services:
+  php:
+    container_name: frame_php
+    build: ./docker/php
+    volumes:
+      - ./docker/php/php.ini:/var/www/php.ini
+
+  web:
+    container_name: frame_web
+    extends:
+      service: php
+    ports:
+      - 128.0.0.2:80:80
+    volumes:
+      - ./log/apache:/var/log/apache
+      - ./docker/web/conf:/var/www/conf
+      - ./docker/web/init.sh:/init.sh
+      - ./docker/waitFor.sh:/var/www/waitFor.sh
+      - ./docker/setUserID.sh:/var/www/setUserID.sh
+    volumes_from:
+      - data
+    links:
+      - mariadb:mysql
+    environment:
+      ROOT: /var/www/html
+      DOCKER_CONFDIR: /var/www/conf
+      APACHE_RUN_USER: www-data
+      APACHE_RUN_GROUP: www-data
+      APACHE_LOG_DIR: /var/log/apache2
+    command: /init.sh
+
+  deployment:
+    container_name: frame_deployment
+    extends:
+      service: php
+    volumes:
+      - ./temp/composer_cache:/var/composer_cache
+      - ./docker/deployments/init.sh:/init.sh
+      - ./docker/setUserID.sh:/var/www/setUserID.sh
+      - ./docker/waitFor.sh:/var/www/waitFor.sh
+    volumes_from:
+      - data
+    depends_on:
+      - mariadb
+    links:
+      - mariadb
+    command: /init.sh
+    environment:
+      COMPOSER_CACHE_DIR: /var/composer_cache
+      COMPOSER_ALLOW_SUPERUSER: 1
+      PHINX_ENVIRONMENT: develop
+      MARIADB_CONTAINER_NAME: sladom_mariadb
+
+  mariadb:
+    container_name: frame_mariadb
+    image: mariadb:10.2
+    ports:
+      - 128.0.0.2:3306:3306
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+      - ./log/mysql:/var/log/mysql
+      - ./docker/mariadb/init.d:/docker-entrypoint-initdb.d
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+
+  data:
+    container_name: frame_data
+    image: busybox:latest
+    volumes:
+       - ./:/var/www/html

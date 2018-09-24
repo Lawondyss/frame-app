@@ -1,0 +1,11 @@
+!.htaccess
+
+# Docker
+/mysql-data/
+
+# Nette
+/log/
+!/log/.htaccess
+/temp/
+!/temp/.htaccess
+

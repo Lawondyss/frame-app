@@ -1,0 +1,16 @@
+parameters:
+
+php:
+    date.timezone: Europe/Prague
+
+
+application:
+    errorPresenter: Common:Error
+    scanComposer: false
+    mapping:
+        *: App\Module\*\*Presenter
+
+services:
+    routerFactory: App\Router\RouterFactory
+    router: @routerFactory::create
+    tracy.logger: App\Service\Logger\Logger(%logDir%, %logEmail%)
